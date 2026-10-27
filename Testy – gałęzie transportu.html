@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Testy – gałęzie transportu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f7fafa; --card:#ffffff; --ink:#14313a; --muted:#5b7179; --line:#dbe5e7;
+  --teal:#0f6e7a; --teal-soft:#e3f1f3; --ok:#2c7a3c; --ok-soft:#e6f4e9; --bad:#b0392f; --bad-soft:#fbe8e6;
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --paper:#0f1a1d; --card:#17262a; --ink:#e4eef0; --muted:#94aab0; --line:#2a3d42;
+  --teal:#4fb3c0; --teal-soft:#1b3539; --ok:#6cc47e; --ok-soft:#1b3423; --bad:#ef8a80; --bad-soft:#3a2120; color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --paper:#0f1a1d; --card:#17262a; --ink:#e4eef0; --muted:#94aab0; --line:#2a3d42;
+  --teal:#4fb3c0; --teal-soft:#1b3539; --ok:#6cc47e; --ok-soft:#1b3423; --bad:#ef8a80; --bad-soft:#3a2120; color-scheme:dark; }
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Lexend",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+main{max-width:640px;margin:0 auto;padding:20px 18px 40px}
+h1{font-size:1.65rem;line-height:1.15;margin:8px 0 6px;font-weight:700;letter-spacing:-.01em}
+.lead{color:var(--muted);margin:0 0 18px}
+.route{display:flex;align-items:center;gap:0;margin:18px 0 22px}
+.route i{flex:1;height:4px;background:var(--line);border-radius:2px}
+.route b{width:14px;height:14px;border-radius:50%;border:3px solid var(--paper);box-shadow:0 0 0 2px currentColor;background:currentColor;flex:none}
+.sect{font-weight:600;margin:18px 0 8px;font-size:1rem}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 13px;font:inherit;font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.chip .dot{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.chip[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--card))}
+.chip small{color:var(--muted)}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:15px 18px;font:inherit;font-weight:600;font-size:1.02rem;cursor:pointer;background:var(--teal);color:#fff;margin-top:12px}
+:root[data-theme="dark"] .btn{color:#0f1a1d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#0f1a1d}}
+.btn.ghost{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.chip:focus-visible,.opt:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.stat{display:flex;gap:10px;margin-top:16px}
+.stat div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat strong{display:block;font-size:1.3rem}
+.stat span{color:var(--muted);font-size:.82rem}
+.top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.9rem}
+.top button{background:none;border:0;color:var(--muted);font:inherit;cursor:pointer;padding:4px 0}
+.track{display:flex;gap:4px;margin:10px 0 20px}
+.track span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.track span.ok{background:var(--ok)} .track span.bad{background:var(--bad)} .track span.now{background:var(--teal)}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:500;color:var(--c);background:color-mix(in srgb,var(--c) 13%,var(--card));padding:3px 10px;border-radius:999px}
+.tag::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.q{font-size:1.2rem;font-weight:600;line-height:1.35;margin:12px 0 16px}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:13px 14px;font:inherit;font-size:.98rem;cursor:pointer;display:flex;gap:11px;align-items:flex-start;transition:border-color .15s,background .15s}
+.opt .k{flex:none;width:26px;height:26px;border-radius:7px;background:var(--teal-soft);color:var(--teal);display:grid;place-items:center;font-weight:600;font-size:.85rem}
+.opt:hover:not(:disabled){border-color:var(--teal)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)} .opt.ok .k{background:var(--ok);color:#fff}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)} .opt.bad .k{background:var(--bad);color:#fff}
+.opt.dim{opacity:.55}
+.why{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--teal-soft);font-size:.93rem}
+.why b{display:block;margin-bottom:2px}
+.score{font-size:4.2rem;font-weight:700;line-height:1;margin:18px 0 4px;letter-spacing:-.03em}
+.score small{font-size:1.6rem;color:var(--muted);font-weight:500}
+.verdict{font-size:1.1rem;font-weight:600;margin:0 0 4px}
+.review{margin-top:20px;display:flex;flex-direction:column;gap:10px}
+.rv{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:10px;padding:11px 13px;font-size:.92rem}
+.rv p{margin:6px 0 0}
+.rv .you{color:var(--bad)} .rv .good{color:var(--ok);font-weight:600}
+.hidden{display:none}
+@media (prefers-reduced-motion:no-preference){ .pop{animation:pop .25s ease-out} @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}} }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const Q=[
+// KLASYFIKACJA
+["k","Ile gałęzi transportu wyróżnia się ze względu na specyfikę drogi transportowej?","6","4","5","8","Kolejowy, samochodowy, lotniczy, wodny śródlądowy, morski i przesyłowy."],
+["k","Co jest kryterium podziału w klasyfikacji pionowej transportu?","Środowisko (droga transportowa) i sposób przemieszczania się środka transportu","Przedmiot przewozu","Odległość przewozu","Forma własności","Klasyfikacja pionowa dzieli transport na gałęzie według środowiska i drogi."],
+["k","Klasyfikacja pionowa dzieli transport na:","gałęzie","rodzaje","systemy","technologie","Pionowa = gałęzie, pozioma = rodzaje."],
+["k","Klasyfikacja pozioma dzieli transport na:","rodzaje","gałęzie","środowiska","sieci","Pozioma = rodzaje (według różnych kryteriów)."],
+["k","Ze względu na środowisko wyróżnia się transport:","lądowy, wodny, powietrzny","krajowy, międzynarodowy","regularny, nieregularny","publiczny, branżowy, własny","To trzy środowiska ruchu."],
+["k","W aspekcie przedmiotowym transport to:","proces technologiczny przemieszczania osób, przedmiotów lub energii za pomocą środków transportu","wydzielone ekonomicznie celowe przemieszczanie ładunków i osób","przewóz na podstawie umowy z klientem","przewóz realizowany według rozkładu jazdy","Aspekt przedmiotowy = proces technologiczny."],
+["k","W aspekcie podmiotowym transport to:","technicznie, organizacyjnie i ekonomicznie wydzielone celowe przemieszczanie ładunków i osób","proces technologiczny przemieszczania energii","przewóz bez przeładunku","przewóz w tej samej jednostce ładunkowej","Aspekt podmiotowy = działalność wydzielona technicznie, organizacyjnie i ekonomicznie."],
+["k","Transport regularny to transport realizowany:","według rozkładu jazdy podanego do publicznej wiadomości","na zamówienie klienta","bez przeładunku","jednym środkiem transportu","Regularny = rozkład jazdy znany publicznie."],
+["k","Transport nieregularny jest realizowany:","na zamówienie, na podstawie umowy zawartej z klientem","według stałego rozkładu jazdy","tylko w transporcie lotniczym","wyłącznie przez przedsiębiorstwa państwowe","Nieregularny = w momencie wystąpienia konkretnego zapotrzebowania."],
+["k","Transport bezpośredni to transport:","realizowany jednym środkiem transportu bez przeładunku","z wykorzystaniem co najmniej dwóch środków transportu","z udziałem dwóch gałęzi transportu","realizowany na zamówienie","Bezpośredni = jeden środek, brak przeładunku."],
+["k","Transport pośredni wiąże się z:","przeładunkiem – wykorzystaniem co najmniej dwóch środków transportu","brakiem przeładunku","jednym środkiem transportu na całej trasie","przewozem tylko osób","Pośredni = min. 2 środki, więc jest przeładunek."],
+["k","Transport łamany to przewóz z zastosowaniem co najmniej dwóch środków transportu:","należących do jednej gałęzi transportu","należących do różnych gałęzi transportu","w tej samej jednostce ładunkowej","wyłącznie kolejowych i morskich","Łamany = ta sama gałąź, np. dwie ciężarówki."],
+["k","Transport multimodalny to przewóz za pośrednictwem:","co najmniej dwóch gałęzi transportu","jednego środka transportu","dwóch środków tej samej gałęzi","wyłącznie rurociągów","Multimodalny = min. 2 gałęzie."],
+["k","Który rodzaj transportu polega na przewozie ładunków w tych samych jednostkach ładunkowych (np. kontenerach) różnymi gałęziami?","intermodalny","łamany","bezpośredni","branżowy","Intermodalny = ta sama jednostka ładunkowa na całej trasie."],
+["k","W transporcie kombinowanym dowóz i odwóz realizuje zwykle transport:","samochodowy","lotniczy","przesyłowy","morski","Główna trasa: kolej, żegluga lub samolot; dowóz i odwóz: samochód."],
+["k","Transport kombinowany zalicza się do transportu:","intermodalnego","łamanego","bezpośredniego","przesyłowego","Kombinowany to odmiana intermodalnego."],
+["k","Ze względu na zasięg geograficzny transport dzieli się na:","krajowy i międzynarodowy","regularny i nieregularny","bezpośredni i pośredni","publiczny i własny","Zasięg geograficzny = krajowy / międzynarodowy."],
+["k","Transport międzynarodowy dzieli się na:","kontynentalny i międzykontynentalny","miejski i podmiejski","regionalny i międzyregionalny","zakładowy i osiedlowy","Pozostałe odpowiedzi to odmiany transportu krajowego."],
+["k","Który z wymienionych jest odmianą transportu krajowego?","międzywojewódzki","międzykontynentalny","kontynentalny","transoceaniczny","Krajowy: zakładowy, osiedlowy, miejski, podmiejski, regionalny, międzywojewódzki itd."],
+["k","Ze względu na odległość przewozu wyróżnia się transport:","bliskiego, średniego i dalekiego zasięgu","krajowy i międzynarodowy","lądowy, wodny i powietrzny","osób i ładunków","Kryterium odległości = zasięg bliski/średni/daleki."],
+["k","Transport publiczny to transport, w którym usługi:","świadczone są każdemu, kto zapłaci przewidzianą opłatę","świadczone są nieodpłatnie dla własnej firmy","świadczone są tylko dla określonej branży","realizowane są tylko przez kolej","Publiczny = dostępny dla każdego."],
+["k","Transport branżowy to usługi przewozowe świadczone:","odpłatnie, specjalistycznym taborem, dla odbiorców z określonej branży","każdemu, kto zapłaci","nieodpłatnie na rzecz własnego przedsiębiorstwa","wyłącznie dla osób prywatnych","Branżowy = wyspecjalizowany tabor dla danej branży."],
+["k","Na transport własny składają się:","transport gospodarczy i transport indywidualny","transport publiczny i branżowy","transport krajowy i międzynarodowy","transport regularny i nieregularny","Gospodarczy = nieodpłatne przewozy własnymi środkami na rzecz własnej firmy."],
+["k","Która gałąź transportu NIE przewozi osób?","przesyłowa (rurociągowa)","kolejowa","morska","lotnicza","Wszystkie gałęzie oprócz rurociągowej wożą osoby i ładunki."],
+["k","Ze względu na przedmiot przewozu wyróżnia się transport:","osób i ładunków","krajowy i międzynarodowy","zarobkowy i niezarobkowy","lądowy i wodny","Przedmiot przewozu = co wieziemy."],
+["k","Jak nazywa się polska miejscowość, w której przeładowuje się większość towarów z Chin na Nowym Jedwabnym Szlaku?","Małaszewicze","Gdynia","Kutno","Sławków","Małaszewicze to jeden z największych „suchych” portów w Europie."],
+["k","Nowy Jedwabny Szlak to przykład transportu:","międzynarodowego kolejowego na duże odległości","krajowego samochodowego","śródlądowego","lotniczego regionalnego","To sieć połączeń kolejowych Chiny–Europa."],
+// SAMOCHODOWY
+["s","Transport drogowy polega na przewożeniu osób lub towarów:","kołowymi środkami transportu po drogach lądowych","po torach kolejowych","statkami powietrznymi","rurociągami","Definicja z podręcznika."],
+["s","Która gałąź transportu jest najbardziej rozpowszechniona w Polsce i Europie?","samochodowa","kolejowa","morska","śródlądowa","Ze względu na ogólną dostępność to główny sposób wykonywania przewozów."],
+["s","Od czego ściśle zależy efektywność transportu samochodowego?","od stanu dróg i infrastruktury","od stanu wód","od warunków w porcie lotniczym","od przepustowości rurociągów","Ważne są drogi, punkty przeładunkowe i centra logistyczne."],
+["s","Która ustawa wprowadza podział transportu drogowego na krajowy i międzynarodowy?","Ustawa z 6 września 2001 r. o transporcie drogowym","Ustawa z 3 lipca 2002 r. Prawo lotnicze","Krajowy Program Kolejowy","Kodeks morski","Art. 4 ustawy o transporcie drogowym."],
+["s","Międzynarodowy transport drogowy to przewóz, w którym jazda między miejscem początkowym a docelowym odbywa się:","z przekroczeniem granicy Rzeczypospolitej Polskiej","wyłącznie po autostradach","tylko w obrębie jednego województwa","bez użycia przyczepy","Kluczowe jest przekroczenie granicy RP."],
+["s","Krajowy transport drogowy wymaga, aby pojazdy były:","zarejestrowane w kraju, a cała trasa przebiegała na terytorium RP","zarejestrowane za granicą","wyposażone w kontenery","przewożone koleją","Start, koniec i droga przejazdu – w RP."],
+["s","Ze względu na działalność gospodarczą transport drogowy dzieli się na:","zarobkowy i niezarobkowy","krajowy i międzynarodowy","osób i ładunków","regularny i nieregularny","Kryterium: ekonomiczna forma prowadzenia działalności."],
+["s","Co oznacza dostawa typu door-to-door?","dostawę od drzwi nadawcy do drzwi odbiorcy","dostawę tylko do portu","dostawę z przeładunkiem w terminalu","dostawę wyłącznie koleją","Door-to-door to zaleta transportu samochodowego."],
+["s","Która cecha jest ZALETĄ transportu samochodowego?","najlepsza dostępność przestrzenna","duża ładowność","brak zanieczyszczeń","możliwość przewozów międzykontynentalnych","Gęsta i spójna sieć dróg."],
+["s","Która cecha jest WADĄ transportu samochodowego?","wysoki współczynnik wypadkowości","mała dostępność przestrzenna","brak możliwości dostaw door-to-door","bardzo niska prędkość","Inne wady: zanieczyszczenie, korki, mała ładowność."],
+["s","Transport samochodowy ma stosunkowo:","małą ładowność środków transportu","największą ładowność ze wszystkich gałęzi","największą prędkość ze wszystkich gałęzi","najniższe koszty przewozu","Mała ładowność to jedna z wad."],
+["s","Czego NIE umożliwia transport samochodowy?","transportu międzykontynentalnego","dowozu do innych gałęzi transportu","przewozu osób na krótkie odległości","dostaw door-to-door","Brak transportu międzykontynentalnego to wada."],
+["s","Transport samochodowy dobrze nadaje się do:","przewozu osób na krótkich odległościach","przewozu ropy na tysiące kilometrów","przewozu masowego zboża przez ocean","przesyłu energii elektrycznej","To jedna z zalet tej gałęzi."],
+["s","Transport bimodalny polega najczęściej na wykorzystaniu:","ciężarówki i pociągu","samolotu i statku","rurociągu i taśmociągu","barki i statku morskiego","Bimodalny = dwa środki transportu, zwykle ciężarówka + pociąg."],
+["s","Jakie zjawisko jest skutkiem słabo rozwiniętej infrastruktury drogowej?","kongestia (zatory), uszkodzenia dróg i kolizje","zamarzanie dróg wodnych","przerwy w przesyle gazu","spadek prędkości samolotów","Zwiększa się natężenie ruchu na odcinkach tras."],
+["s","Podstawowym środkiem transportu towarowego w przewozach drogowych są:","ciężkie samochody i przyczepy","autobusy","busy osobowe","motocykle","Ich użycie wymaga dobrej jakości sieci dróg."],
+["s","Najbardziej znana droga rzymska z III w. p.n.e. to:","Via Appia","Via Baltica","Droga Bursztynowa","Via Carpatia","Ciekawostka z rozdziału o transporcie drogowym."],
+// KOLEJOWY
+["ko","Transport kolejowy to gałąź transportu:","lądowego, wykorzystująca własną infrastrukturę","wodnego","powietrznego","przesyłowego","Definicja z podręcznika."],
+["ko","Czym jest tabor kolejowy?","środkami transportu kolejowego, np. lokomotywami i wagonami","siecią torów","stacjami kolejowymi","rozkładem jazdy","Za jego stan odpowiadają instytucje kolejowe."],
+["ko","Transport kolejowy to forma transportu sztywnotorowego, co oznacza, że:","pojazdy mogą poruszać się tylko po charakterystycznym torze","pojazdy mogą jeździć po każdej drodze","pojazdy nie potrzebują infrastruktury","przewozi tylko ładunki płynne","Np. po drodze ułożonej z szyn."],
+["ko","Transport kolejowy najczęściej wybiera się, gdy:","trzeba przewieźć bardzo duże ilości towaru","przesyłka jest mała i pilna","odbiorca jest za oceanem","trzeba dostarczyć towar do drzwi klienta w mieście","Np. węgiel z kopalni, paliwo z rafinerii, zboże ze skupu."],
+["ko","Koleje klasyczne dwuszynowe dzielą się na:","konwencjonalne, dużych prędkości i miejskie","publiczne i branżowe","linowe i magnetyczne","parowe i elektryczne","Podział z podręcznika."],
+["ko","Kolej wąskotorowa, normalnotorowa i szerokotorowa to rodzaje kolei:","konwencjonalnej","niekonwencjonalnej","magnetycznej","linowej","Podział według rodzaju toru."],
+["ko","Która kolej należy do kolei niekonwencjonalnych?","magnetyczna","normalnotorowa","szerokotorowa","wąskotorowa","Niekonwencjonalne: z taborem ogumionym, magnetyczna, jednoszynowa, linowa."],
+["ko","Ze względu na ogólną charakterystykę trasy i taboru wyróżnia się kolej:","ciężką i lekką","publiczną i niepubliczną","parową i elektryczną","towarową i przemysłową","Kryterium: trasa i tabor."],
+["ko","Kolej użytku publicznego i niepublicznego to podział ze względu na:","liczbę użytkowników i charakter przewozów","rodzaj toru","napęd","funkcję","Kryterium z diagramu klasyfikacji."],
+["ko","Kolej podmiejska (aglomeracyjna) to podział kolei ze względu na:","funkcję","napęd","rodzaj toru","charakterystykę taboru","Funkcja: sieci krajowej, dalekobieżna, regionalna, lokalna, podmiejska, towarowa, przemysłowa."],
+["ko","Kolej parowa, elektryczna i grawitacyjna to podział ze względu na:","napęd","funkcję","rodzaj toru","liczbę użytkowników","Kryterium napędu."],
+["ko","Kolej międzyregionalna to inaczej kolej:","dalekobieżna","podmiejska","przemysłowa","linowa","Kolej międzyregionalna (dalekobieżna)."],
+["ko","Który dokument opisuje planowany rozwój polskiej sieci kolei?","Krajowy Program Kolejowy (KPK)","Prawo lotnicze","Ustawa o transporcie drogowym","Europejski system dróg wodnych","KPK wzmacnia rolę kolei w systemie transportowym kraju."],
+["ko","Jak nazywa się strategia rozwoju PKP Intercity do 2030 r.?","Kolej Dużych Inwestycji","Kolej Plus","Nowy Jedwabny Szlak","Pendolino 2030","Wiąże się m.in. z podziałem pociągów na trzy kategorie."],
+["ko","Do jakiej prędkości mają jeździć pociągi kategorii wysokiej w strategii PKP Intercity?","do 250 km/h","do 160 km/h","do 200 km/h","do 320 km/h","Średnia i ekonomiczna – do 200 km/h."],
+["ko","Która kategoria pociągów PKP Intercity ma najwięcej przystanków?","ekonomiczna","wysoka","średnia","ekspresowa","Obsługuje także mniejsze miejscowości."],
+["ko","Która cecha jest ZALETĄ transportu kolejowego?","stosunkowo niski jednostkowy koszt transportu","dostawy door-to-door bez przeładunku","najwyższa prędkość","brak kosztów infrastruktury","Inne zalety: duża ładowność, ekologiczność, niezawodność."],
+["ko","Która cecha jest WADĄ transportu kolejowego?","wysoki koszt budowy infrastruktury","mała ładowność","duży wpływ pogody na przewozy","brak charakteru ekologicznego","Inne wady: mała elastyczność tras, ryzyko zniszczenia towarów."],
+["ko","Kiedy przy przewozie koleją trzeba skorzystać z innego środka transportu?","gdy odbiorca nie posiada bocznicy kolejowej","gdy towar jest ciężki","gdy pada deszcz","gdy przewóz jest krajowy","Brak bocznicy wymusza dowóz np. samochodem."],
+["ko","Jaki wpływ mają warunki atmosferyczne na przewozy kolejowe?","stosunkowo mały – to zaleta kolei","bardzo duży – to główna wada kolei","całkowicie uniemożliwiają przewozy zimą","taki sam jak na żeglugę śródlądową","Mały wpływ pogody to zaleta transportu kolejowego."],
+["ko","Polski zespół trakcyjny dużych prędkości to:","Pendolino","Eurostar","TGV","Shinkansen","Zdjęcie z ciekawostki o KPK."],
+// LOTNICZY
+["l","Transport lotniczy realizowany jest za pomocą:","statków powietrznych","statków morskich","barek","naczep","Przewozi osoby i ładunki (cargo)."],
+["l","Przewozy ładunków w transporcie lotniczym nazywa się:","przewozami cargo","przewozami trampowymi","kabotażem","piggyback","Cargo = ładunki."],
+["l","Która gałąź transportu ma największą prędkość?","lotnicza","kolejowa","samochodowa","morska","Zapamiętaj: największa prędkość."],
+["l","Samoloty należą do:","najbezpieczniejszych środków transportu","najbardziej wypadkowych środków transportu","najtańszych środków transportu","najbardziej ekologicznych środków transportu","Transport lotniczy to najbezpieczniejsza gałąź."],
+["l","Co jest warunkiem rozwoju transportu lotniczego?","bardzo duże nakłady finansowe i wysoko wykwalifikowana kadra","rozbudowana sieć rzek","duża liczba bocznic kolejowych","rurociągi","Tylko bogate kraje stać na jego rozwój."],
+["l","Który z wymienionych NIE jest klasą statku powietrznego według polskiego prawa?","poduszkowiec","szybowiec","wiatrakowiec","sterowiec","Klasy: samolot, szybowiec, motoszybowiec, śmigłowiec, wiatrakowiec, balon, sterowiec, bezzałogowy statek, spadochron ratowniczy, urządzenie latające."],
+["l","Która ustawa definiuje statek powietrzny?","Prawo lotnicze z 3 lipca 2002 r.","Ustawa o transporcie drogowym z 2001 r.","Kodeks morski","Krajowy Program Kolejowy","Art. 2 Prawa lotniczego."],
+["l","Statek powietrzny to urządzenie zdolne do unoszenia się w atmosferze wskutek oddziaływania powietrza:","innego niż oddziaływanie powietrza odbitego od podłoża","odbitego od podłoża","wyłącznie ciepłego","wyłącznie sprężonego","Dlatego poduszkowiec nie jest statkiem powietrznym."],
+["l","Samolot utrzymuje się w powietrzu dzięki:","sile nośnej nieruchomych skrzydeł","obracającemu się wirnikowi","gazowi lżejszemu od powietrza","poduszce powietrznej","Silniki wytwarzają ciąg do utrzymania prędkości."],
+["l","Centralnym portem lotniczym w Polsce jest:","Port im. Fryderyka Chopina w Warszawie (Okęcie)","Kraków-Balice","Gdańsk","Katowice-Pyrzowice","Obsługuje przewozy pasażerskie i towarowe."],
+["l","Który port lotniczy jest regionalnym portem w Polsce?","Wrocław-Strachowice","Frankfurt","Kopenhaga","Oslo","Pozostałe to zagraniczne kierunki podróży z Polski."],
+["l","Jaki jest udział transportu lotniczego w strukturze przewozu ładunków?","bardzo mały","największy ze wszystkich gałęzi","około 80%","taki sam jak kolei","Lotnictwo wozi głównie osoby i małe, cenne partie."],
+["l","Największe znaczenie w przewozach lotniczych mają połączenia:","transatlantyckie między Europą Zachodnią a Ameryką Północną","między Polską a Czechami","w obrębie jednego województwa","między portami rzecznymi","Ciekawostka z rozdziału."],
+["l","Która cecha jest ZALETĄ transportu lotniczego?","najkorzystniejsza oferta czasowa na duże odległości","niskie koszty infrastruktury","opłacalność na krótkich odległościach","niezależność od pogody","Inne zalety: bezpieczeństwo, przewozy międzykontynentalne."],
+["l","Która cecha jest WADĄ transportu lotniczego?","nieopłacalność przewozów na niewielkie odległości","niska prędkość","brak przewozów międzykontynentalnych","wysoki współczynnik wypadkowości","Inne wady: wysokie koszty, zależność od pogody."],
+["l","Transport lotniczy umożliwia przewóz:","stosunkowo niewielkich partii produktów o specyficznej podatności","dużych ilości węgla i rudy","ropy naftowej w milionach ton","każdej ilości ładunków masowych","To jest wymienione w wadach."],
+["l","Jaki trend dotyczy cen usług transportu lotniczego?","są coraz niższe","są coraz wyższe","są stałe od 50 lat","są regulowane przez KPK","Coraz niższe ceny to zaleta."],
+// MORSKI
+["m","Ile mniej więcej towarów w handlu światowym przewozi się transportem morskim?","ok. 80%","ok. 20%","ok. 50%","ok. 95%","Dlatego odgrywa główną rolę w wymianie międzynarodowej."],
+["m","Transport morski wykorzystuje się głównie do przewozu:","ładunków","osób","energii elektrycznej","poczty","Ze względu na duże możliwości ładunkowe."],
+["m","Żegluga międzynarodowa potocznie nazywana jest żeglugą:","wielką","małą","przybrzeżną","kabotażową","Odbywa się po morzach innych niż terytorialne danego państwa."],
+["m","Żegluga przybrzeżna odbywa się:","w stosunkowo bliskiej odległości od brzegu","po oceanach między kontynentami","po rzekach i kanałach","tylko między dwoma portami","Odległość ustala się indywidualnie dla każdego akwenu."],
+["m","Żegluga krajowa odbywa się:","w rejonach morskich należących do jednego państwa","po morzach innych niż terytorialne","po jeziorach","tylko w kanałach","Podział według rejonu pływania."],
+["m","Żegluga kabotażowa to żegluga:","między portami danego państwa","bez stałego rozkładu","między dwoma konkretnymi portami tam i z powrotem","według stałego rozkładu","Dzieli się na mały i wielki kabotaż."],
+["m","Mały kabotaż odbywa się:","w obrębie jednego akwenu","na różnych akwenach","tylko po rzekach","między kontynentami","Wielki kabotaż – na różnych akwenach."],
+["m","Żegluga liniowa (regularna) odbywa się:","zgodnie z ustalonym rozkładem rejsów na stałych trasach","bez stałych tras i rozkładu","tylko w obrębie jednego państwa","tylko przy brzegu","Liniowa = stały rozkład."],
+["m","Żegluga trampowa (nieregularna) to przewozy:","bez stałych tras i rozkładów, według aktualnego zapotrzebowania rynku","według stałego rozkładu rejsów","między portami jednego państwa","przez furty dziobowe i rufowe","Usługa polega na wynajęciu całej jednostki."],
+["m","Żegluga wahadłowa to żegluga:","między konkretnymi portami przez promy, z załadunkiem na zmianę furtami dziobowymi i rufowymi","bez stałego rozkładu","po morzach terytorialnych innych państw","wyłącznie po rzekach","Zapewnia szybki załadunek i rozładunek."],
+["m","Do przewozu zboża i surowców mineralnych służą:","masowce","zbiornikowce","kontenerowce","chłodniowce","Ładunki o dużej masie przewozi się masowo."],
+["m","Do przewozu ropy naftowej służą:","zbiornikowce","masowce","drobnicowce","kontenerowce","Także siarka, benzyna, chemikalia, skroplony gaz."],
+["m","Drobnicowce przewożą:","towary przemysłowe liczone w sztukach, np. w skrzyniach","ropę naftową","zboże luzem","skroplony gaz","Np. bele materiału."],
+["m","Chłodniowce przewożą:","zamrożone towary spożywcze","kontenery z elektroniką","ropę naftową","rudę żelaza","Wymagają utrzymania niskiej temperatury."],
+["m","Kontenerowce przewożą towary w kontenerach, które:","nie wymagają przeładowywania zawartości i umożliwiają łatwy załadunek","muszą być rozpakowane w porcie","służą tylko do płynów","nie mieszczą się na wagonach","Dlatego kontenery są podstawą transportu intermodalnego."],
+["m","Który kanał łączy Morze Śródziemne z Morzem Czerwonym?","Kanał Sueski","Kanał Panamski","Kanał Kiloński","La Manche","Zdjęcie satelitarne pod kodem QR."],
+["m","Rejestrowanie statków w krajach o niskich opłatach i małych wymaganiach to tzw.:","tania bandera","żegluga trampowa","kabotaż","piggyback","Popularne kraje: Liberia, Panama, Wyspy Marshalla."],
+["m","Które państwa są na czele rankingu flot pod względem zarejestrowanych statków?","Liberia, Panama i Wyspy Marshalla","Polska, Niemcy i Francja","Japonia, Chiny i Grecja","USA, Kanada i Meksyk","Firmy z Japonii, Chin i Grecji posiadają floty, ale rejestrują je pod tanią banderą."],
+["m","Co obniżyło koszty i skróciło czas transportu morskiego?","budowa kanałów i swobodna żegluga cieśninami","zakaz kontenerów","rozwój transportu lotniczego","budowa rurociągów","Np. kanały Sueski, Panamski, Kiloński."],
+["m","Która cecha jest ZALETĄ transportu morskiego?","światowy zasięg obsługiwanych szlaków","duża prędkość","dostawy door-to-door","niezależność od portów","Inne zalety: niski koszt jednostkowy, przewozy masowe."],
+["m","Która cecha jest WADĄ transportu morskiego?","niewielka prędkość środka transportu","wysoki jednostkowy koszt transportu","mała ładowność","brak możliwości przewozu ciężkich ładunków","Inne wady: potrzeba dowozu i odwozu, ryzyko zniszczenia ładunku."],
+["m","Dlaczego transport morski wymaga usług dowozowo-odwozowych?","ze względu na niską dostępność przestrzenną portów morskich","bo statki nie mogą przewozić kontenerów","bo transport morski jest regularny","bo jest bardzo szybki","Port nie jest u odbiorcy – trzeba dowieźć towar."],
+["m","Ładunki w transporcie morskim narażone są na:","wilgoć i słoną wodę","brak tlenu","promieniowanie","wysokie przeciążenia","Ryzyko zniszczenia ładunków nieodpornych na wilgoć."],
+// ŚRÓDLĄDOWY
+["w","Transport wodny śródlądowy odbywa się na:","rzekach, kanałach i jeziorach","morzach i oceanach","wodach terytorialnych","tylko na kanałach portowych","Definicja z podręcznika."],
+["w","Dla jakiego ładunku podręcznik podaje transport śródlądowy jako najtańszy?","drewna po wycince","kwiatów ciętych","przesyłek kurierskich","energii elektrycznej","Najtańszy środek transportu niektórych ładunków."],
+["w","Jakie środki transportu wykorzystuje się w żegludze śródlądowej?","barki i statki, silnikowe i bezsilnikowe","naczepy i ciągniki","rurociągi","śmigłowce","Przewozy osób i ładunków."],
+["w","Dlaczego transport śródlądowy często ma charakter sezonowy?","akweny zamarzają lub mają zbyt wysoki albo zbyt niski stan wód","w zimie nie ma ładunków","ze względu na rozkład jazdy","bo barki są drogie","Zależność od warunków atmosferycznych."],
+["w","Osią zachodnioeuropejskiego systemu dróg wodnych jest:","Ren","Dunaj","Wisła","Łaba","Ren łączy m.in. Szwajcarię, Niemcy, Francję i Holandię."],
+["w","Kręgosłupem południowego podsystemu dróg wodnych w Europie jest:","Dunaj","Ren","Odra","Sekwana","Łączy m.in. Niemcy, Austrię, Węgry, Serbię, Rumunię."],
+["w","Kanał łączący Ren i Dunaj to:","Ren–Men–Dunaj","Kanał Kiloński","Kanał Sueski","Kanał Augustowski","Ma ok. 590 km."],
+["w","Które państwo ma najwięcej dróg wodnych na świecie?","Rosja","Niemcy","Holandia","Polska","Ciekawostka z podręcznika."],
+["w","Jakie przeszkody mogą wystąpić na trasach żeglugi śródlądowej?","mielizny, mosty i śluzy","góry lodowe i sztormy oceaniczne","korki uliczne","brak bocznic","To tzw. wąskie gardła."],
+["w","Według charakteru pracy żeglugę śródlądową dzieli się na:","kabotażową, liniową, trampową i wahadłową","międzynarodową, krajową i przybrzeżną","konwencjonalną i niekonwencjonalną","rurową i przewodową","Jak w transporcie morskim (według charakteru)."],
+["w","Ze względu na rodzaj ładunku transport wodny śródlądowy dzieli się na:","transport towarów i transport pasażerów","krajowy i międzynarodowy","rurowy i przewodowy","liniowy i trampowy","Diagram klasyfikacji."],
+["w","Która cecha jest ZALETĄ transportu wodnego śródlądowego?","niski jednostkowy koszt transportu","duża prędkość","niezależność od pogody","brak wąskich gardeł","Inne zalety: towary o dużej masie, ekologiczność."],
+["w","Która cecha jest WADĄ transportu wodnego śródlądowego?","uzależnienie od warunków atmosferycznych","wysoki jednostkowy koszt","brak możliwości przewozu ciężkich towarów","duże zanieczyszczenie powietrza","Zamarznięte rzeki, zbyt niskie lub wysokie stany wód."],
+["w","Mielizny w żegludze śródlądowej:","utrudniają żeglugę","ułatwiają żeglugę","nie mają znaczenia","zwiększają prędkość barek","To częsta pułapka w zadaniach prawda/fałsz."],
+["w","W porównaniu ze statkami morskimi, środki transportu śródlądowego:","mają znacznie mniejsze wymagania","mają większe wymagania","nie potrzebują załogi","pływają tylko po oceanach","Żegluga śródlądowa odbywa się w warunkach bardziej komfortowych."],
+// PRZESYŁOWY
+["p","Transport przesyłowy to głównie:","transport rurowy cieczy i gazów oraz przewodowy przesył energii elektrycznej","przewóz osób koleją","przewóz kontenerów","żegluga przybrzeżna","Definicja z podręcznika."],
+["p","Cechą charakterystyczną transportu przesyłowego jest:","przystosowanie sieci wyłącznie do jednego rodzaju ładunku","przewóz osób i ładunków","duża elastyczność tras","zależność od pogody","Np. tylko gaz, tylko woda albo tylko prąd."],
+["p","Do środków transportu przesyłowego zalicza się:","rurociągi, taśmociągi i linie przesyłowe","barki i statki","naczepy i wagony","śmigłowce i sterowce","Wszystkie to sztuczne drogi transportowe."],
+["p","Rurociągi, taśmociągi i linie przesyłowe zalicza się do:","sztucznych dróg transportowych","naturalnych dróg transportowych","dróg wodnych","dróg kołowych","Zapamiętaj to pojęcie."],
+["p","Taśmociągiem najczęściej przemieszcza się:","węgiel lub żwir","energię elektryczną","gaz ziemny","wodę pitną","Ładunki sypkie."],
+["p","Linie przesyłowe wysokiego i średniego napięcia łączą:","elektrownie ze stacjami transformatorowymi","porty z rafineriami","kopalnie z hutami","terminale z bocznicami","Służą do przesyłu energii elektrycznej."],
+["p","Transport przesyłowy dzieli się na:","rurowy i przewodowy","liniowy i trampowy","krajowy i kontynentalny","ciężki i lekki","Diagram klasyfikacji."],
+["p","Linie łączności należą do transportu przesyłowego:","przewodowego","rurowego","taśmowego","wodnego","Przewodowy: linie energetyczne i linie łączności."],
+["p","W którym kraju poprowadzono najdłuższą sieć rurociągów naftowych?","USA","Polska","Japonia","Wielka Brytania","Rozbudowane sieci mają też Rosja, Kanada, Chiny, Europa Zachodnia."],
+["p","Dlaczego kraje europejskie ograniczają import surowców rurociągami z Rosji?","w związku z agresją Rosji na Ukrainę w 2022 r.","bo rurociągi są za drogie w użytkowaniu","bo Rosja nie ma rurociągów","bo zakazało tego Prawo lotnicze","Informacja z rozdziału 14."],
+["p","Która cecha jest ZALETĄ transportu przesyłowego?","niezależność od warunków atmosferycznych","możliwość przesyłu wielu rodzajów ładunku jedną drogą","niski koszt budowy","przewóz osób","Inne zalety: niskie koszty użytkowania, ekologiczność."],
+["p","Która cecha jest WADĄ transportu przesyłowego?","wysokie koszty budowy infrastruktury","wysokie koszty użytkowania","zależność od pogody","duże zanieczyszczenie środowiska","Druga wada: jeden rodzaj ładunku na jedną drogę przesyłu."],
+["p","Ropociągi, gazociągi i wodociągi to przykłady:","rurociągów","taśmociągów","linii przesyłowych","bocznic","Rurociągi cieczy i gazów."],
+// INTERMODALNY
+["i","Transport intermodalny to przewóz ładunków z wykorzystaniem dwóch lub więcej gałęzi transportu:","w tej samej jednostce ładunkowej na całej trasie","z przeładunkiem zawartości na każdym etapie","tylko w obrębie jednej gałęzi","bez umowy o przewóz","Kluczowa jest ta sama jednostka ładunkowa."],
+["i","Transport intermodalny wynika z umowy zawartej między klientem a:","operatorem transportu intermodalnego","każdym przewoźnikiem osobno","portem lotniczym","zarządcą infrastruktury","Jedna umowa."],
+["i","Który element NIE jest warunkiem transportu intermodalnego?","przewóz wyłącznie jedną gałęzią transportu","użycie środków co najmniej dwóch gałęzi","zawarcie tylko jednej umowy o przewóz","odpowiedzialność jednego wykonawcy za dostawę","Muszą być min. 2 gałęzie."],
+["i","Ile umów o przewóz zawiera się w transporcie intermodalnym?","jedną","dwie","tyle, ile gałęzi transportu","żadnej","Jedna umowa i jeden odpowiedzialny wykonawca."],
+["i","Za przebieg dostawy w transporcie intermodalnym odpowiada:","jeden wykonawca","każdy przewoźnik za swój odcinek","odbiorca","nadawca","Trzeci warunek transportu intermodalnego."],
+["i","Gdzie bardziej rozpowszechnione jest pojęcie transportu multimodalnego?","w USA","w Europie","w Azji","w Afryce","Intermodalny – w Europie."],
+["i","Ze względu na odległość i dostępność środków przewozu w transporcie intermodalnym wyróżnia się przewozy:","samochodowo-kolejowe i samochodowo-wodne","krajowe i międzynarodowe","liniowe i trampowe","rurowe i przewodowe","Diagram klasyfikacji transportu intermodalnego."],
+["i","Pod względem zasięgu wyróżnia się przewozy intermodalne:","krajowe, międzynarodowe i międzykontynentalne","bliskie, średnie i dalekie","regularne i nieregularne","publiczne i branżowe","Diagram klasyfikacji."],
+["i","Co oznacza skrót UTI?","intermodalne jednostki transportowe","Unia Transportu Intermodalnego","ustawa o transporcie i infrastrukturze","urządzenia transportu indywidualnego","Z franc. Unités de transport intermodal."],
+["i","Która z wymienionych NIE jest jednostką UTI?","paleta EUR luzem","kontener wielki","nadwozie wymienne","pojemnik ACTS","UTI: kontenery wielkie, nadwozia wymienne, pojemniki ACTS, pojazdy samochodowe."],
+["i","Ile terminali intermodalnych było w Polsce w 2024 r.?","45","12","90","150","Liczba z podręcznika."],
+["i","Który terminal intermodalny w Polsce miał największą przepustowość w 2024 r.?","Baltic Hub w Gdańsku","Małaszewicze","Port Gdynia","Terminal w Poznaniu","Dawniej DCT Gdańsk."],
+["i","System „na barana” (piggyback) polega na tym, że:","jeden środek transportu (np. naczepa) jest przewożony na pojeździe innego rodzaju transportu (np. wagonie)","ciężarówka jedzie po szynach na własnych kołach","kontener jest przeładowywany na statek","naczepa jest przewożona samolotem","Załadunek poziomy (ciągnikiem) lub pionowy (dźwigiem)."],
+["i","W systemie „na barana” załadunek i wyładunek naczep odbywa się:","poziomo (ciągnikiem) lub pionowo (dźwigiem)","tylko ręcznie","wyłącznie przez furty dziobowe","przez rurociąg","Z tabeli systemów transportu kombinowanego."],
+["i","System ruchomej drogi (Ro-La) polega na przewozie:","ciężarówek z ciągnikami na niskopodłogowych wagonach kolejowych","samych kontenerów na statkach","naczep samolotami","pasażerów autobusami","Pojazdy wjeżdżają własnym napędem przez rampę czołową."],
+["i","Skrót Ro-La pochodzi z języka niemieckiego i oznacza:","Rollende Landstrasse – ruchoma droga","Rotierende Ladung – obrotowy ładunek","Rohr-Leitung – rurociąg","Rollende Lager – ruchomy magazyn","Ruchoma droga."],
+["i","W systemie bimodalnym:","specjalna naczepa jeździ po drodze i po szynach na wózkach wagonowych, bez przeładunku zawartości","naczepa jest podnoszona dźwigiem na statek","ciągnik wjeżdża na wagon z naczepą","kontener jest przewożony samolotem","Siłowniki obsługuje kierowca."],
+["i","Która technologia wykorzystuje wagony z obrotową platformą i została opracowana przez francuskie konsorcjum Lohr?","Modalohr","Megaswing","CargoBeamer","Flexiwaggon","W pełni zautomatyzowany poziomy załadunek naczep."],
+["i","Czym Flexiwaggon różni się od Modalohr?","umożliwia transport naczepy wraz z ciągnikiem siodłowym","przewozi tylko kontenery","nie wymaga wagonów","działa tylko na statkach","Zasada działania jest podobna."],
+["i","W technologii Megaswing:","część ładowna wagonu opuszcza się, a naczepa wjeżdża tyłem","naczepa jedzie z ciągnikiem","naczepę podnosi dźwig","ciężarówki wjeżdżają przez rampę czołową","Służy do przewozu samych naczep."],
+["i","W technologii CargoBeamer:","naczepa stoi na nasadzie przesuwanej na wagon; z drugiej strony jednocześnie można zdejmować inną naczepę","naczepa jedzie z ciągnikiem na platformie obrotowej","cała ciężarówka jedzie na wagonie niskopodłogowym","naczepa ma własne koła kolejowe","Załadunek i rozładunek równolegle."],
+["i","Która cecha jest ZALETĄ transportu intermodalnego?","zmniejszenie degradacji środowiska, zwłaszcza zanieczyszczenia powietrza","brak potrzeby urządzeń przeładunkowych","jedna gałąź transportu","brak terminali","Inne zalety: łączenie mocnych stron gałęzi, mniej pracy przy przeładunkach."],
+["i","Która cecha jest WADĄ transportu intermodalnego?","konieczność użycia specjalistycznych urządzeń przeładunkowych, np. suwnic i dźwigów","duże zanieczyszczenie powietrza","brak możliwości wykorzystania kolei","wiele umów o przewóz","Terminale muszą być odpowiednio wyposażone."],
+["i","Transport intermodalny ogranicza nakład pracy przy czynnościach:","załadunkowo-rozładunkowych","księgowych","celnych","serwisowych","W porównaniu z przewozem różnymi gałęziami bez jednostki ładunkowej."],
+// PORÓWNANIA
+["c","Która gałąź transportu NIE umożliwia przewozów międzykontynentalnych?","kolejowa","morska","lotnicza","żadna z wymienionych","Samochodowa i kolejowa nie dają transportu międzykontynentalnego."],
+["c","Która gałąź jest niezależna od warunków atmosferycznych?","przesyłowa","lotnicza","śródlądowa","morska","Rurociągi działają niezależnie od pogody."],
+["c","Którą gałąź najlepiej wybrać do pilnego przewozu cennej przesyłki z Polski do USA?","lotniczą","śródlądową","kolejową","przesyłową","Najszybsza na duże odległości."],
+["c","Którą gałąź najlepiej wybrać do przewozu 50 000 ton zboża z Polski do Afryki?","morską","lotniczą","samochodową","przesyłową","Masowiec – duża ładowność i niski koszt jednostkowy."],
+["c","Którą gałąź najlepiej wybrać do przesyłu gazu ziemnego na stałe między państwami?","przesyłową","lotniczą","samochodową","śródlądową","Gazociąg."],
+["c","Którą gałąź najlepiej wybrać do dostarczenia mebli z hurtowni do domu klienta w tym samym mieście?","samochodową","kolejową","morską","lotniczą","Door-to-door na krótkim dystansie."],
+["c","Którą gałąź najlepiej wybrać do przewozu dużej ilości węgla z kopalni do elektrowni w innym województwie?","kolejową","lotniczą","morską","samochodową dostawczą","Duże ilości na lądzie – kolej."],
+["c","Wysoki koszt budowy infrastruktury to wada wspólna dla transportu:","kolejowego, lotniczego i przesyłowego","samochodowego i śródlądowego","tylko morskiego","tylko samochodowego","Wymienione w wadach tych trzech gałęzi."],
+["c","Charakter ekologiczny wymieniany jest jako zaleta transportu:","kolejowego","samochodowego","lotniczego","żadnego","Także śródlądowego, przesyłowego i morskiego (poza awariami)."],
+["c","Uzależnienie od warunków atmosferycznych to wada transportu:","lotniczego i śródlądowego","przesyłowego","kolejowego","rurociągowego","Kolej ma mały wpływ pogody – to jej zaleta."],
+["c","Która gałąź ma największy udział w handlu światowym?","morska","lotnicza","kolejowa","samochodowa","Ok. 80% towarów."],
+["c","Niski jednostkowy koszt transportu to zaleta m.in. transportu:","morskiego, kolejowego i śródlądowego","lotniczego","samochodowego","żadnego","Gałęzie o dużej ładowności."],
+["pr","Którą ustawę uchwalono 15 listopada 1984 r.?","Prawo przewozowe","Prawo o ruchu drogowym","Kodeks morski","Prawo pocztowe","To najstarsza ustawa z listy źródeł prawa transportowego."],
+["pr","Kiedy uchwalono ustawę Prawo o ruchu drogowym?","20 czerwca 1997 r.","15 listopada 1984 r.","6 września 2001 r.","28 marca 2003 r.","Ustawa z 20 czerwca 1997 r."],
+["pr","Które dwie ustawy uchwalono tego samego dnia – 21 grudnia 2000 r.?","o żegludze śródlądowej i o dozorze technicznym","o transporcie drogowym i Kodeks morski","Prawo lotnicze i o transporcie kolejowym","o kierujących pojazdami i o przewozie towarów niebezpiecznych","Obie mają datę 21 grudnia 2000 r."],
+["pr","Kiedy uchwalono ustawę o transporcie drogowym?","6 września 2001 r.","18 września 2001 r.","20 czerwca 1997 r.","5 lipca 2018 r.","Kodeks morski jest z 18 września 2001 r. – nie pomyl!"],
+["pr","Którą ustawę uchwalono 18 września 2001 r.?","Kodeks morski","Ustawę o transporcie drogowym","Prawo lotnicze","Ustawę o żegludze śródlądowej","Transport drogowy – 6 września, Kodeks morski – 18 września 2001 r."],
+["pr","Kiedy uchwalono Prawo lotnicze?","3 lipca 2002 r.","28 marca 2003 r.","15 listopada 1984 r.","23 listopada 2012 r.","Ustawa z 3 lipca 2002 r."],
+["pr","Którą ustawę uchwalono 28 marca 2003 r.?","o transporcie kolejowym","Prawo lotnicze","o czasie pracy kierowców","Prawo przewozowe","Ustawa o transporcie kolejowym z 28 marca 2003 r."],
+["pr","Kiedy uchwalono ustawę o czasie pracy kierowców?","16 kwietnia 2004 r.","5 lipca 2018 r.","5 stycznia 2011 r.","20 czerwca 1997 r.","Ustawa z 16 kwietnia 2004 r."],
+["pr","Którą ustawę uchwalono 5 stycznia 2011 r.?","o kierujących pojazdami","o przewozie towarów niebezpiecznych","o tachografach","Prawo pocztowe","O przewozie towarów niebezpiecznych – 19 sierpnia 2011 r."],
+["pr","Kiedy uchwalono ustawę o przewozie towarów niebezpiecznych?","19 sierpnia 2011 r.","5 stycznia 2011 r.","21 grudnia 2000 r.","16 kwietnia 2004 r.","Ustawa z 19 sierpnia 2011 r."],
+["pr","Którą ustawę uchwalono 23 listopada 2012 r.?","Prawo pocztowe","Prawo przewozowe","o tachografach","o dozorze technicznym","Prawo pocztowe z 23 listopada 2012 r."],
+["pr","Kiedy uchwalono ustawę o tachografach?","5 lipca 2018 r.","16 kwietnia 2004 r.","3 lipca 2002 r.","23 listopada 2012 r.","To najnowsza ustawa z listy."],
+["pr","Która z ustaw jest najstarsza?","Prawo przewozowe","Prawo o ruchu drogowym","Kodeks morski","Ustawa o transporcie drogowym","Prawo przewozowe – 1984 r."],
+["pr","Która z ustaw jest najnowsza?","o tachografach","Prawo pocztowe","o kierujących pojazdami","o przewozie towarów niebezpiecznych","Ustawa o tachografach – 2018 r."],
+["pr","Która ustawa reguluje przewóz listów i paczek przez operatorów pocztowych?","Prawo pocztowe","Prawo przewozowe","Prawo o ruchu drogowym","Ustawa o dozorze technicznym","Prawo pocztowe z 2012 r."],
+["pr","Na czym polega transport kabotażowy (w transporcie drogowym)?","na świadczeniu usług transportu drogowego w kraju, w którym firma transportowa nie ma siedziby","na przewozie między dwoma krajami UE","na przewozie wyłącznie po autostradach","na przewozie bez umowy przewozowej","Definicja z notatki."],
+["pr","Polska firma transportowa przewozi towar z Berlina do Monachium. To przykład:","transportu kabotażowego","transportu bezpośredniego krajowego","przewozu INTERBUS","transportu przesyłowego","Usługa w kraju (Niemcy), w którym firma nie ma siedziby."],
+["pr","Czemu ma służyć transeuropejska sieć transportowa?","rozwojowi wspólnego rynku, spójności, konkurencyjności i zrównoważonemu rozwojowi UE","wyłącznie przewozom wojskowym","zastąpieniu transportu kolejowego drogowym","likwidacji kabotażu","Sieć dotyczy Unii Europejskiej."],
+["pr","Który z obowiązków ma przewoźnik zgodnie z prawem przewozowym?","podanie do publicznej wiadomości zakresu swojej działalności","udzielanie stałych rabatów klientom","przewóz każdego ładunku bez względu na posiadane środki","posiadanie własnej floty statków","Inne obowiązki: punkty odpraw, sposób zawierania umowy, taryfy."],
+["pr","Przewoźnik ma obowiązek udostępniać obowiązujące przepisy przewozowe:","bezpłatnie","odpłatnie, według cennika","tylko na życzenie sądu","tylko stałym klientom","Bezpłatne udostępnianie przepisów to jeden z obowiązków."],
+["pr","Które z poniższych NIE jest obowiązkiem przewoźnika według prawa przewozowego?","zawieranie umów wyłącznie na piśmie u notariusza","określenie punktów odpraw","podanie stosowanych taryf i cenników","wykorzystanie odpowiedniego środka transportu do zadania","Notariusz nie jest wymagany."],
+["pr","Przewoźnik musi przewozić osoby i rzeczy zgodnie z:","informacjami podanymi do publicznej wiadomości","własnym uznaniem w dniu przewozu","poleceniem kierowcy","przepisami Kodeksu morskiego","To jeden z obowiązków z prawa przewozowego."],
+["pr","Przewoźnik ma obowiązek podać do publicznej wiadomości:","ustalone i stosowane przez niego taryfy i cenniki","dane osobowe kierowców","swoje wyniki finansowe","trasy wszystkich konkurentów","Klient musi znać ceny."],
+["pr","Przewoźnik może zlecić wykonanie usługi innej firmie, ale wtedy odpowiedzialność za dostarczenie ładunku ponosi:","przewoźnik","firma, której zlecono usługę","nadawca","odbiorca","Odpowiedzialność nie przechodzi na podwykonawcę."],
+["pr","Przewoźnik może realizować przewóz kilkoma różnymi środkami transportu na podstawie:","jednej umowy i jednego dokumentu przewozowego","osobnej umowy dla każdego środka","ustnego zlecenia kierowcy","karnetu TIR","Uprawnienie przewoźnika z prawa przewozowego."],
+["pr","Co przewoźnik MOŻE (ale nie musi) robić według prawa przewozowego?","publikować regulaminy określające warunki przewozu ładunków","przewozić niezgodnie z publiczną informacją","ukrywać taryfy","pobierać opłaty za udostępnienie przepisów","To uprawnienie, a nie obowiązek."],
+["pr","Przewoźnik jest zwolniony z obowiązku przewozu, gdy:","zaistniały okoliczności, których nie mógł uniknąć ani im zapobiec","przewóz jest dla niego mało opłacalny","klient jest nowy","ładunek jest ciężki","Okoliczności niezależne od przewoźnika."],
+["pr","Przewoźnik może odmówić przewozu, jeżeli zleceniodawca:","nie zastosował się do obowiązujących przepisów przewozowych","zapłacił przelewem","zamówił przewóz z wyprzedzeniem","chce przewozu krajowego","Jedna z trzech przesłanek zwolnienia."],
+["pr","Kiedy przewoźnik jest zwolniony z obowiązku przewozu z powodu braku sprzętu?","gdy nie dysponuje środkami i urządzeniami pozwalającymi na transport ładunku","gdy ma zbyt wielu klientów","gdy pada deszcz","gdy ładunek jest tani","Np. nie ma cysterny do przewozu cieczy."],
+["pr","Która sytuacja NIE zwalnia przewoźnika z obowiązku przewozu?","niska opłacalność przewozu","okoliczności, których nie mógł uniknąć","nieprzestrzeganie przepisów przez zleceniodawcę","brak odpowiednich środków transportu","Opłacalność nie jest przesłanką zwolnienia."],
+["pr","Konwencja TIR to:","porozumienie celne dotyczące międzynarodowego przewozu towarów z zastosowaniem karnetów TIR","umowa o przewozie towarów niebezpiecznych","umowa o czasie pracy załóg","umowa o przewozie żywności","Kluczowe słowa: celne, karnety TIR."],
+["pr","Karnety stosuje się w ramach konwencji:","TIR","CMR","ATP","AETR","Karnet TIR to dokument celny."],
+["pr","Konwencja CMR reguluje:","zasady, prawa i obowiązki stron umowy zarobkowego drogowego przewozu międzynarodowego","przewóz towarów niebezpiecznych","przewóz szybko psującej się żywności","czas pracy kierowców","CMR = umowa przewozu międzynarodowego drogowego."],
+["pr","Jaki jednolity dokument wprowadzono w ramach konwencji CMR?","list przewozowy CMR","karnet TIR","tachograf","licencję CEMT","List przewozowy CMR."],
+["pr","Konwencja ADR dotyczy międzynarodowego przewozu drogowego:","towarów niebezpiecznych","szybko psującej się żywności","pasażerów autokarami","przesyłek pocztowych","ADR = towary niebezpieczne."],
+["pr","Firma przewozi cysternę z benzyną z Polski do Niemiec. Którą konwencję musi stosować?","ADR","ATP","INTERBUS","CEMT","Benzyna to towar niebezpieczny."],
+["pr","Konwencja ATP dotyczy:","przewozów szybko psujących się artykułów żywnościowych i specjalnych środków transportu do tych przewozów","przewozu towarów niebezpiecznych","porozumienia celnego","okazjonalnych przewozów pasażerów","ATP = żywność szybko psująca się."],
+["pr","Chłodnia przewozi mrożone ryby z Polski do Francji. Która konwencja ma tu zastosowanie?","ATP","ADR","TIR","INTERBUS","Szybko psująca się żywność i specjalne środki transportu."],
+["pr","Umowa AETR dotyczy:","czasu pracy załóg pojazdów wykonujących międzynarodowe przewozy drogowe","przewozu towarów niebezpiecznych","przewozu żywności","porozumienia celnego","AETR = czas pracy załóg."],
+["pr","Jakie urządzenie nakazuje montować i używać umowa AETR?","tachograf","termometr ładunku","GPS z kamerą","licznik paliwa","Tachograf monitoruje czas pracy kierowcy."],
+["pr","Czego NIE rejestruje tachograf?","temperatury przewożonego ładunku","prędkości pojazdu","długości przebytej drogi","przerw w pracy","Rejestruje m.in. prędkość, drogę, czas prowadzenia, przerwy, dane kierowcy i pojazdu."],
+["pr","Który z elementów rejestruje tachograf?","czas prowadzenia pojazdu","masę ładunku","zużycie opon","cenę paliwa","Także moment otwarcia wykresówki (tarczy)."],
+["pr","Tachograf rejestruje m.in. moment otwarcia:","wykresówki (tarczy)","drzwi kabiny","naczepy","zbiornika paliwa","Wymienione w notatce przy konwencji AETR."],
+["pr","Umowa INTERBUS dotyczy:","międzynarodowego okazjonalnego przewozu pasażerów autokarami i autobusami","regularnych przewozów kolejowych","przewozu towarów niebezpiecznych","licencji transportowych","INTERBUS = okazjonalne przewozy autokarowe."],
+["pr","Szkoła organizuje jednorazową wycieczkę autokarem z Polski za granicę. Która umowa dotyczy takiego przewozu?","INTERBUS","CMR","ATP","TIR","Okazjonalny międzynarodowy przewóz pasażerów autokarem."],
+["pr","Co wprowadziła Konferencja CEMT?","wielostronny kontyngent licencji transportowych","karnety TIR","list przewozowy","obowiązek tachografów","CEMT = kontyngent licencji."],
+["pr","Jaki jest cel Konferencji CEMT?","ułatwienie rozwoju międzynarodowego transportu i integracja uczestniczących krajów","regulacja przewozu żywności","kontrola celna","ochrona przewozów pocztowych","Z notatki."],
+["pr","Która konwencja dotyczy umowy zarobkowego drogowego przewozu międzynarodowego?","CMR","ADR","ATP","CEMT","CMR i list przewozowy CMR."],
+["pr","Dopasuj: towary niebezpieczne – ?","ADR","ATP","AETR","TIR","ADR – niebezpieczne; ATP – żywność; AETR – czas pracy; TIR – cła."],
+["pr","Dopasuj: czas pracy załóg w przewozach międzynarodowych – ?","AETR","ADR","CMR","INTERBUS","AETR wymusza tachograf."],
+["pr","Która ustawa jest polskim aktem dotyczącym czasu pracy kierowców?","ustawa z 16 kwietnia 2004 r. o czasie pracy kierowców","Prawo o ruchu drogowym","ustawa o dozorze technicznym","Prawo przewozowe","Na poziomie międzynarodowym – umowa AETR."],
+["in","Ile reguł (formuł) zawierają Incoterms 2020?","11","13","9","4","7 reguł dla każdego rodzaju transportu i 4 dla transportu morskiego i śródlądowego."],
+["in","Kto opracowuje i wydaje reguły Incoterms?","Międzynarodowa Izba Handlowa (ICC) w Paryżu","Unia Europejska","Organizacja Narodów Zjednoczonych","Światowa Organizacja Handlu (WTO)","ICC wydaje Incoterms od 1936 r."],
+["in","Od kiedy obowiązują Incoterms 2020?","od 1 stycznia 2020 r.","od 1 stycznia 2010 r.","od 1 lipca 2019 r.","od 1 stycznia 2021 r.","Zastąpiły Incoterms 2010."],
+["in","Co określają reguły Incoterms?","podział kosztów, ryzyka i obowiązków między sprzedającym a kupującym przy dostawie towaru","moment przejścia prawa własności towaru","cenę towaru i sposób zapłaty","skutki naruszenia umowy sprzedaży","Incoterms nie regulują własności, ceny ani płatności."],
+["in","Czego NIE regulują Incoterms?","przejścia prawa własności towaru","momentu przejścia ryzyka","podziału kosztów transportu","obowiązku odprawy celnej","Własność, cena i płatność są ustalane w umowie sprzedaży."],
+["in","Czy stosowanie Incoterms jest obowiązkowe?","nie – stosuje się je, gdy strony powołają się na nie w umowie","tak – w każdej umowie międzynarodowej","tak – tylko w Unii Europejskiej","tak – tylko w transporcie morskim","To dobrowolne reguły, np. „FCA Poznań Incoterms 2020”."],
+["in","Który zapis formuły jest prawidłowy?","FOB Gdańsk Incoterms 2020","FOB Incoterms","Gdańsk FOB","FOB 2020","Formuła + wskazane miejsce/port + wersja Incoterms."],
+["in","Która reguła nakłada na sprzedającego NAJMNIEJ obowiązków?","EXW","DDP","CIF","FCA","Ex Works – sprzedający udostępnia towar w swoim zakładzie."],
+["in","Która reguła nakłada na sprzedającego NAJWIĘCEJ obowiązków?","DDP","EXW","FOB","DAP","Delivered Duty Paid – sprzedający opłaca także cło i odprawę importową."],
+["in","Co oznacza skrót EXW?","Ex Works – z zakładu","Export Warehouse – magazyn eksportowy","Extra Weight – nadwaga","Express Way – droga ekspresowa","Grupa E."],
+["in","Co oznacza skrót FCA?","Free Carrier – franco przewoźnik","Free Cargo Area – wolny obszar ładunkowy","Freight Cost Agreement – umowa o koszt frachtu","Full Container Access","Grupa F."],
+["in","Co oznacza skrót FAS?","Free Alongside Ship – franco wzdłuż burty statku","Free At Station – franco stacja","Freight And Storage – fracht i składowanie","Fast Air Shipment","Tylko transport morski i śródlądowy."],
+["in","Co oznacza skrót FOB?","Free On Board – franco statek","Freight On Board – fracht na pokładzie","Free Of Bill – bez rachunku","Forwarding On Border – spedycja na granicy","Ryzyko przechodzi, gdy towar jest na pokładzie statku."],
+["in","Co oznacza skrót CFR?","Cost and Freight – koszt i fracht","Carriage For Rail – przewóz koleją","Customs Free Region – strefa wolnocłowa","Cost For Risk – koszt ryzyka","Grupa C, transport morski."],
+["in","Co oznacza skrót CIF?","Cost, Insurance and Freight – koszt, ubezpieczenie i fracht","Carriage Including Fees – przewóz z opłatami","Customs Inspection Fee – opłata za kontrolę celną","Cargo In Front – ładunek z przodu","Grupa C, transport morski, z ubezpieczeniem."],
+["in","Co oznacza skrót CPT?","Carriage Paid To – przewóz opłacony do","Cost Per Ton – koszt za tonę","Customs Paid Transport – transport z opłaconym cłem","Container Port Terminal","Grupa C, każdy rodzaj transportu."],
+["in","Co oznacza skrót CIP?","Carriage and Insurance Paid To – przewóz i ubezpieczenie opłacone do","Cost In Port – koszt w porcie","Cargo Insurance Policy – polisa ładunkowa","Customs Import Payment – opłata importowa","Grupa C, każdy rodzaj transportu, z ubezpieczeniem."],
+["in","Co oznacza skrót DAP?","Delivered At Place – dostarczone do miejsca","Delivered After Payment – dostarczone po zapłacie","Duty And Port – cło i port","Direct Air Parcel","Grupa D."],
+["in","Co oznacza skrót DPU?","Delivered at Place Unloaded – dostarczone do miejsca z rozładunkiem","Duty Paid Unloaded – cło opłacone, rozładowane","Direct Port Unloading – rozładunek w porcie","Delivered Per Unit – dostarczone za sztukę","Nowa nazwa w Incoterms 2020."],
+["in","Co oznacza skrót DDP?","Delivered Duty Paid – dostarczone, cło opłacone","Delivered Door to Port – od drzwi do portu","Direct Delivery Program","Duty Deferred Payment – odroczona płatność cła","Maksimum obowiązków sprzedającego."],
+["in","Która reguła zastąpiła w Incoterms 2020 regułę DAT?","DPU","DAP","DDP","CPT","DAT (Delivered at Terminal) zmieniono na DPU – rozładunek możliwy w dowolnym miejscu, nie tylko w terminalu."],
+["in","Które reguły Incoterms 2020 są przeznaczone WYŁĄCZNIE dla transportu morskiego i śródlądowego?","FAS, FOB, CFR, CIF","FCA, CPT, CIP, DAP","EXW, FCA, DDP, DPU","FOB, FCA, CIF, CIP","Pozostałych 7 reguł można stosować przy każdym rodzaju transportu."],
+["in","Która reguła może być stosowana przy KAŻDYM rodzaju transportu?","FCA","FOB","FAS","CFR","Każdy rodzaj transportu: EXW, FCA, CPT, CIP, DAP, DPU, DDP."],
+["in","Która reguła NIE nadaje się do transportu lotniczego?","FOB","FCA","CPT","DAP","FOB dotyczy załadunku na statek."],
+["in","Ile reguł Incoterms 2020 można stosować przy każdym rodzaju transportu?","7","4","11","5","EXW, FCA, CPT, CIP, DAP, DPU, DDP."],
+["in","Do której grupy należą reguły FCA, FAS i FOB?","F","C","D","E","Grupa F – główny przewóz opłaca kupujący."],
+["in","Do której grupy należą reguły CPT, CIP, CFR i CIF?","C","F","D","E","Grupa C – sprzedający opłaca główny przewóz."],
+["in","Do której grupy należą reguły DAP, DPU i DDP?","D","C","F","E","Grupa D – dostawa w miejscu przeznaczenia."],
+["in","Czym charakteryzuje się grupa F?","główny przewóz organizuje i opłaca kupujący","sprzedający opłaca główny przewóz","sprzedający dostarcza towar do miejsca przeznaczenia","sprzedający tylko udostępnia towar w zakładzie","F = główny przewóz nieopłacony przez sprzedającego."],
+["in","W której grupie sprzedający opłaca główny przewóz, ale ryzyko przechodzi na kupującego w kraju wysyłki?","C","D","F","E","Grupa C ma dwa punkty krytyczne: ryzyka i kosztów."],
+["in","W regule FOB ryzyko przechodzi na kupującego, gdy:","towar zostanie załadowany na pokład statku w porcie załadunku","towar zostanie postawiony wzdłuż burty statku","towar dotrze do portu przeznaczenia","towar zostanie rozładowany u kupującego","FOB = franco statek."],
+["in","W regule FAS sprzedający wywiązuje się z dostawy, gdy:","umieści towar wzdłuż burty statku w porcie załadunku","załaduje towar na statek","dostarczy towar do portu przeznaczenia","udostępni towar w swoim zakładzie","Załadunek na statek jest już po stronie kupującego."],
+["in","W regule CIF sprzedający opłaca fracht do portu przeznaczenia, a ryzyko przechodzi na kupującego:","po załadowaniu towaru na statek w porcie załadunku","w porcie przeznaczenia","po rozładunku u kupującego","po odprawie importowej","Tak samo jak w CFR i FOB."],
+["in","W formule „CIF Rotterdam Incoterms 2020” Rotterdam to:","port przeznaczenia","port załadunku","siedziba sprzedającego","miejsce odprawy eksportowej","W grupie C podaje się miejsce przeznaczenia, w grupie F – miejsce wysyłki."],
+["in","W formule „FOB Gdynia Incoterms 2020” Gdynia to:","port załadunku","port przeznaczenia","siedziba kupującego","miejsce odprawy importowej","W grupie F podaje się miejsce lub port wysyłki."],
+["in","Czym różni się CIF od CFR?","w CIF sprzedający musi dodatkowo ubezpieczyć towar","w CIF ryzyko przechodzi w porcie przeznaczenia","CIF stosuje się w transporcie lotniczym","w CIF kupujący opłaca fracht","I = insurance (ubezpieczenie)."],
+["in","Czym różni się CIP od CPT?","w CIP sprzedający musi dodatkowo ubezpieczyć towar","CIP jest tylko dla transportu morskiego","w CIP ryzyko przechodzi w miejscu przeznaczenia","w CIP kupujący opłaca przewóz","Oba stosuje się przy każdym rodzaju transportu."],
+["in","W których regułach sprzedający ma OBOWIĄZEK ubezpieczenia towaru?","CIF i CIP","CFR i CPT","DAP i DDP","FOB i FCA","Tylko w tych dwóch regułach ubezpieczenie jest obowiązkowe."],
+["in","Jaka zmiana dotycząca ubezpieczenia pojawiła się w Incoterms 2020?","w CIP wymagany jest wyższy zakres ubezpieczenia (klauzula A), a w CIF nadal minimalny (klauzula C)","zniesiono obowiązek ubezpieczenia w CIF","ubezpieczenie jest obowiązkowe we wszystkich regułach","ubezpieczenie przejęło FOB","Klauzula A = ochrona od wszystkich ryzyk."],
+["in","W regule CPT ryzyko przechodzi na kupującego, gdy:","sprzedający przekaże towar pierwszemu przewoźnikowi","towar dotrze do miejsca przeznaczenia","towar zostanie rozładowany","kupujący zapłaci cło","Przewóz do miejsca przeznaczenia opłaca jednak sprzedający."],
+["in","W regule DAP sprzedający dostarcza towar do miejsca przeznaczenia:","na środku transportu, gotowy do rozładunku – rozładunek należy do kupującego","rozładowany","z opłaconym cłem importowym","tylko do portu załadunku","Odprawę importową robi kupujący."],
+["in","Jedyną regułą, w której sprzedający ma obowiązek rozładować towar w miejscu przeznaczenia, jest:","DPU","DAP","DDP","CIP","Unloaded = rozładowane."],
+["in","W której regule odprawę importową i cło opłaca sprzedający?","DDP","DAP","DPU","CIF","We wszystkich pozostałych odprawę importową robi kupujący."],
+["in","W której regule odprawę EKSPORTOWĄ wykonuje kupujący?","EXW","FCA","FOB","DDP","W pozostałych regułach odprawę eksportową robi sprzedający."],
+["in","W regule EXW sprzedający:","udostępnia towar w swoim zakładzie i nie ma obowiązku go załadować","ładuje towar i robi odprawę eksportową","dostarcza towar do przewoźnika w porcie","opłaca przewóz do kupującego","Załadunek, transport i odprawy – po stronie kupującego."],
+["in","W regule FCA, gdy dostawa następuje w zakładzie sprzedającego:","sprzedający ładuje towar na środek transportu kupującego","kupujący sam ładuje towar","sprzedający dostarcza towar do portu przeznaczenia","sprzedający opłaca cło importowe","Gdy dostawa jest w innym miejscu – sprzedający nie rozładowuje swojego pojazdu."],
+["in","Jaką regułę ICC zaleca zamiast FOB przy przewozie towarów w kontenerach?","FCA","EXW","FAS","DDP","Kontener oddaje się przewoźnikowi w terminalu, a nie ładuje bezpośrednio na statek."],
+["in","Jaką nowość wprowadzono w regule FCA w Incoterms 2020?","możliwość uzgodnienia, że kupujący poleci przewoźnikowi wystawić sprzedającemu konosament z adnotacją o załadunku","obowiązek ubezpieczenia towaru","opłacenie cła przez sprzedającego","przejście ryzyka w porcie przeznaczenia","Ważne przy akredytywach."],
+["in","Która zmiana w Incoterms 2020 dotyczy środków transportu?","strony mogą przewozić towar własnym transportem w FCA, DAP, DPU i DDP","zakazano transportu drogowego w regułach D","FOB można stosować w lotnictwie","transport własny jest obowiązkowy w EXW","Wcześniej zakładano przewóz przez zewnętrznego przewoźnika."],
+["in","Polska firma sprzedaje meble do Niemiec i chce, żeby kupujący odebrał je z jej magazynu i sam wszystkim się zajął. Która reguła pasuje?","EXW","DDP","CIP","DPU","Minimum obowiązków sprzedającego."],
+["in","Sprzedający ma dostarczyć towar pod drzwi klienta w Czechach, rozładować go i nie zajmuje się cłem. Która reguła pasuje?","DPU","DAP","DDP","FCA","DAP – bez rozładunku; DDP – z cłem."],
+["in","Eksporter opłaca fracht morski i ubezpieczenie do portu w Rotterdamie, a ryzyko przechodzi w Gdańsku po załadunku. Która reguła?","CIF","CFR","FOB","DAP","Koszt, ubezpieczenie i fracht."],
+["in","Przyporządkuj regułę do grupy E:","EXW","FCA","CPT","DAP","Grupa E ma tylko jedną regułę."]
+];
+
+const TOPICS={
+  k:{n:"Klasyfikacja",c:"#0f6e7a"}, s:{n:"Samochodowy",c:"#c96a12"}, ko:{n:"Kolejowy",c:"#7b4bb0"},
+  l:{n:"Lotniczy",c:"#1f6fb8"}, m:{n:"Morski",c:"#145a9c"}, w:{n:"Śródlądowy",c:"#2b8a6e"},
+  p:{n:"Przesyłowy",c:"#8a6532"}, i:{n:"Intermodalny",c:"#b8336a"}, c:{n:"Porównania",c:"#4a6a73"}, pr:{n:"Prawo transportowe",c:"#6b7a1f"}, in:{n:"Incoterms 2020",c:"#3f51b5"}
+};
+const PER_TEST=10;
+const app=document.getElementById('app');
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let selected=new Set(Object.keys(TOPICS));
+let wrongIds=new Set(store.get('wrong',[]));
+let used=new Set(store.get('used',[]));
+let stats=store.get('stats',{tests:0,best:0});
+let test=null;
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function save(){store.set('wrong',[...wrongIds]);store.set('used',[...used]);store.set('stats',stats)}
+
+function pick(mode){
+  let pool=Q.map((q,i)=>i).filter(i=>selected.has(Q[i][0]));
+  if(mode==='wrong') pool=[...wrongIds].filter(i=>Q[i]);
+  if(mode!=='wrong'){
+    let fresh=pool.filter(i=>!used.has(i));
+    if(fresh.length<PER_TEST){ pool.forEach(i=>used.delete(i)); fresh=pool.slice(); }
+    pool=fresh;
+  }
+  const ids=shuffle(pool).slice(0,PER_TEST);
+  return ids.map(i=>{const q=Q[i];const opts=shuffle([q[2],q[3],q[4],q[5]]);return{id:i,t:q[0],q:q[1],opts,correct:opts.indexOf(q[2]),why:q[6],ans:null}});
+}
+
+function home(){
+  const avail=Q.filter(q=>selected.has(q[0])).length;
+  const usedIn=Q.reduce((n,q,i)=>n+(selected.has(q[0])&&used.has(i)?1:0),0);
+  app.innerHTML=`<div class="pop">
+  <div class="route" style="color:var(--teal)"><b style="color:#c96a12"></b><i></i><b style="color:#7b4bb0"></b><i></i><b style="color:#1f6fb8"></b><i></i><b style="color:#145a9c"></b><i></i><b style="color:#b8336a"></b></div>
+  <h1>Testy z transportu</h1>
+  <p class="lead">${Q.length} pytań: gałęzie transportu (rozdz. 8–15), prawo transportowe i Incoterms 2020. Każdy test to ${PER_TEST} losowych pytań. Pytania nie powtarzają się, dopóki nie przejdziesz całej puli.</p>
+  <div class="sect">Tematy</div>
+  <div class="chips" id="chips">${Object.entries(TOPICS).map(([k,t])=>`<button class="chip" style="--c:${t.c}" data-k="${k}" aria-pressed="${selected.has(k)}"><span class="dot"></span>${t.n} <small>${Q.filter(q=>q[0]===k).length}</small></button>`).join('')}</div>
+  <button class="btn" id="go" ${avail<1?'disabled':''}>Rozpocznij test – ${Math.min(PER_TEST,avail)} pytań</button>
+  ${wrongIds.size?`<button class="btn ghost" id="redo">Powtórz moje błędy (${wrongIds.size})</button>`:''}
+  <div class="stat">
+    <div><strong>${usedIn}/${avail}</strong><span>przerobione z wybranych tematów</span></div>
+    <div><strong>${stats.tests}</strong><span>rozwiązane testy</span></div>
+    <div><strong>${stats.best}/10</strong><span>najlepszy wynik</span></div>
+  </div></div>`;
+  app.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const k=b.dataset.k;
+    if(selected.has(k)){ if(selected.size>1) selected.delete(k);} else selected.add(k); home();});
+  document.getElementById('go').onclick=()=>start('normal');
+  const r=document.getElementById('redo'); if(r) r.onclick=()=>start('wrong');
+}
+
+function start(mode){ test={mode,items:pick(mode),i:0}; if(!test.items.length) return home(); window.scrollTo(0,0); question(); }
+
+function question(){
+  const it=test.items[test.i], t=TOPICS[it.t], n=test.items.length;
+  app.innerHTML=`<div class="pop">
+  <div class="top"><span>Pytanie ${test.i+1} z ${n}</span><button id="quit">Zakończ</button></div>
+  <div class="track">${test.items.map((x,j)=>`<span class="${x.ans===null?(j===test.i?'now':''):(x.ans===x.correct?'ok':'bad')}"></span>`).join('')}</div>
+  <span class="tag" style="--c:${t.c}">${t.n}</span>
+  <div class="q">${esc(it.q)}</div>
+  <div class="opts">${it.opts.map((o,j)=>`<button class="opt" data-j="${j}"><span class="k">${"ABCD"[j]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+  <div id="after"></div></div>`;
+  document.getElementById('quit').onclick=home;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.j));
+}
+
+function answer(j){
+  const it=test.items[test.i]; if(it.ans!==null) return; it.ans=j;
+  const good=j===it.correct;
+  used.add(it.id);
+  if(good){ if(test.mode==='wrong') wrongIds.delete(it.id); } else wrongIds.add(it.id);
+  save();
+  app.querySelectorAll('.opt').forEach((b,k)=>{b.disabled=true;
+    if(k===it.correct) b.classList.add('ok'); else if(k===j) b.classList.add('bad'); else b.classList.add('dim');});
+  const tr=app.querySelectorAll('.track span')[test.i]; tr.className=good?'ok':'bad';
+  const last=test.i===test.items.length-1;
+  document.getElementById('after').innerHTML=`<div class="why pop"><b style="color:${good?'var(--ok)':'var(--bad)'}">${good?'Dobrze!':'Źle. Poprawna odpowiedź: '+esc(it.opts[it.correct])}</b>${esc(it.why)}</div>
+  <button class="btn" id="next">${last?'Zobacz wynik':'Następne pytanie'}</button>`;
+  const nx=document.getElementById('next'); nx.focus({preventScroll:true});
+  nx.scrollIntoView({block:'nearest',behavior:'smooth'});
+  nx.onclick=()=>{ if(last) result(); else { test.i++; window.scrollTo(0,0); question(); } };
+}
+
+function result(){
+  const n=test.items.length, ok=test.items.filter(x=>x.ans===x.correct).length;
+  stats.tests++; if(n===PER_TEST) stats.best=Math.max(stats.best,ok); save();
+  const pct=ok/n;
+  const v=pct===1?'Bezbłędnie. Tak trzymaj!':pct>=.8?'Bardzo dobrze – prawie wszystko.':pct>=.6?'Nieźle, ale przejrzyj błędy.':pct>=.4?'Trzeba jeszcze powtórzyć.':'Wróć do notatki i spróbuj ponownie.';
+  const bad=test.items.filter(x=>x.ans!==x.correct);
+  app.innerHTML=`<div class="pop">
+  <div class="score">${ok}<small> / ${n}</small></div>
+  <p class="verdict">${v}</p>
+  <div class="track">${test.items.map(x=>`<span class="${x.ans===x.correct?'ok':'bad'}"></span>`).join('')}</div>
+  <button class="btn" id="again">Nowy test – ${PER_TEST} losowych pytań</button>
+  ${wrongIds.size?`<button class="btn ghost" id="redo">Powtórz moje błędy (${wrongIds.size})</button>`:''}
+  <button class="btn ghost" id="home">Wybierz tematy</button>
+  ${bad.length?`<div class="sect" style="margin-top:26px">Twoje błędy</div><div class="review">${bad.map(x=>`<div class="rv" style="border-left-color:${TOPICS[x.t].c}"><b>${esc(x.q)}</b>
+    <p class="you">Twoja odpowiedź: ${esc(x.opts[x.ans])}</p><p class="good">Poprawnie: ${esc(x.opts[x.correct])}</p><p>${esc(x.why)}</p></div>`).join('')}</div>`:''}
+  </div>`;
+  window.scrollTo(0,0);
+  document.getElementById('again').onclick=()=>start('normal');
+  document.getElementById('home').onclick=home;
+  const r=document.getElementById('redo'); if(r) r.onclick=()=>start('wrong');
+}
+home();
+</script>
+</body>
+</html>
